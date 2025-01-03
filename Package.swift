@@ -5,18 +5,25 @@ import PackageDescription
 let package = Package(
     name: "swiftvalidator",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v15),
         .iOS(.v15)
     ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .executable(
             name: "swiftvalidator",
-            targets: ["swiftvalidator"]),
-        // 1️⃣ Add the Plugin as one of the package products
+            targets: ["swiftvalidator"]
+        ),
+        .executable(
+            name: "xibidgenerator",
+            targets: ["xibidgenerator"]
+        ),
         .plugin(
             name: "ValidateSwiftLint",
             targets: ["ValidateSwiftLint"]
+        ),
+        .plugin(
+            name: "XibAccessibilityIdentifierUpdater",
+            targets: ["XibAccessibilityIdentifierUpdater"]
         )
     ],
     dependencies: [
@@ -33,12 +40,33 @@ let package = Package(
                 .product(name: "SwiftParser", package: "swift-syntax")
             ]
         ),
+        .executableTarget(
+            name: "xibidgenerator",
+            dependencies: [
+                
+            ]
+        ),
         .plugin(
             name: "ValidateSwiftLint",
             capability: .buildTool(),
             dependencies: ["swiftvalidator"],
             path: "Sources/Plugins/ValidateSwiftLint"
-
+        ),
+        .plugin(
+            name: "XibAccessibilityIdentifierUpdater",
+            capability: .buildTool(),
+            dependencies: ["xibidgenerator"],
+            path: "Sources/Plugins/XibAccessibilityIdentifierUpdater"
+        ),
+        
+        
+        .plugin(
+            name: "XibIDGenerateCommand",
+            capability: .command(
+                intent: .custom(verb: "XibIDGenerator", description: "Update the accessibility identifiers in the xib files"),
+                permissions: [.writeToPackageDirectory(reason: "We need to update the accessibility identifiers in the xib files")]),
+            dependencies: ["xibidgenerator"],
+            path: "Sources/Plugins/XibAccessibilityIdentifierUpdater"
         )
     ]
 )
