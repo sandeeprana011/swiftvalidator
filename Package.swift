@@ -66,7 +66,7 @@ let package = Package(
         .plugin(
             name: "XibIDGenerateCommand",
             capability: .command(
-                intent: .custom(verb: "XibIDGenerator", description: "Update the accessibility identifiers in the xib files"),
+                intent: .custom(verb: "XibIDGenerateCommand", description: "Update the accessibility identifiers in the xib files"),
                 permissions: [.writeToPackageDirectory(reason: "We need to update the accessibility identifiers in the xib files")]),
             dependencies: ["xibidgenerator"],
             path: "Sources/Plugins/XibIDGenerateCommand"
