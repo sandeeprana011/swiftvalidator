@@ -46,3 +46,18 @@ extension XibIDGenerateCommand: XcodeCommandPlugin, XcodeBuildToolPlugin {
     }
     
 }
+extension XibIDGenerateCommand: CommandPlugin {
+    func performCommand(context: PluginContext, arguments: [String]) async throws {
+        let packageDirectory = context.package.directory
+        
+        // Output a message
+        print("Running the custom plugin in \(packageDirectory.string)")
+        
+        // Generate a dummy report file
+        let reportFile = packageDirectory.appending("report.txt")
+        let content = "This is a generated report for the package."
+        
+//        try content.write(to: reportFile, atomically: true, encoding: .utf8)
+        print("Report generated at \(reportFile.string)")
+    }
+}
