@@ -24,7 +24,7 @@ extension XibAccessibilityIdentifierUpdater: XcodeCommandPlugin, XcodeBuildToolP
     
     
     func createBuildCommands(context: XcodeProjectPlugin.XcodePluginContext, target: XcodeProjectPlugin.XcodeTarget) throws -> [PackagePlugin.Command] {
-        let executablePath = try context.tool(named: "xibidgenerator").url
+        let executablePath = try context.tool(named: "xibidlint").url
         debugPrint("swiftvalidator path: \(executablePath)")
         
         var commands = [Command]()

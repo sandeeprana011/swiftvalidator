@@ -14,33 +14,60 @@ import XcodeProjectPlugin
 @main
 struct XibIDGenerateCommand {
     
-   
+    
 }
 
 extension XibIDGenerateCommand: XcodeCommandPlugin {
     func performCommand(context: XcodeProjectPlugin.XcodePluginContext, arguments: [String]) throws {
-        let packageDirectory = context.pluginWorkDirectoryURL.appending(path: "report.txt")
+        let packageDirectory = context.pluginWorkDirectoryURL
         
-        // Output a message
-        print("Running the custom plugin in \(packageDirectory)")
+        let executablePath = try context.tool(named: "xibidgenerator").url
+        print("Running executable at \(executablePath.path)")
+        // Create a process to execute the file
+        let process = Process()
+        // Add arguments if necessary
+        process.executableURL = executablePath
+        let sourceDirectory = context.xcodeProject.directory
+
+                
+        print("context: Source Directory: \(sourceDirectory)")
         
-        // Generate a dummy report file
+        process.arguments = [sourceDirectory.string]
         
-        let content = "This is a generated report for the package."
+        // Capture the output
+        let outputPipe = Pipe()
+        process.standardError = outputPipe
         
-        try content.write(to: packageDirectory, atomically: true, encoding: .utf8)
-        print("Report generated at \(packageDirectory)")
-    
+        process.standardOutput = outputPipe
+        // Run the process
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            throw PluginError.executionFailed(status: process.terminationStatus)
+        }
+        
+        // Get the output from the process
+        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = String(data: outputData, encoding: .utf8) {
+            print("Executable output:")
+            print(output)
+        }
+        
+        // Check for errors
+        if process.terminationStatus != 0 {
+            throw PluginError.executionFailed(status: process.terminationStatus)
+        }
     }
     
-        
+    
 }
 extension XibIDGenerateCommand: CommandPlugin {
     func performCommand(context: PluginContext, arguments: [String]) async throws {
         let packageDirectory = context.package.directory
         
         // Output a message
-        print("Running the custom plugin in \(packageDirectory.string)")
+        print("Command Plugin: Running the custom plugin in \(packageDirectory.string)")
         
         // Generate a dummy report file
         let reportFile = packageDirectory.appending("report.txt")
@@ -53,5 +80,18 @@ extension XibIDGenerateCommand: CommandPlugin {
 extension Path {
     var url: URL {
         return URL(fileURLWithPath: self.string)
+    }
+}
+
+extension XibIDGenerateCommand {
+    enum PluginError: Error, CustomStringConvertible {
+        case executionFailed(status: Int32)
+        
+        var description: String {
+            switch self {
+            case .executionFailed(let status):
+                return "Executable failed with exit code \(status)"
+            }
+        }
     }
 }

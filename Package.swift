@@ -17,13 +17,17 @@ let package = Package(
             name: "xibidgenerator",
             targets: ["xibidgenerator"]
         ),
+        .executable(
+            name: "xibidlint",
+            targets: ["xibidlint"]
+        ),
         .plugin(
             name: "ValidateSwiftLint",
             targets: ["ValidateSwiftLint"]
         ),
         .plugin(
-            name: "XibAccessibilityIdentifierUpdater",
-            targets: ["XibAccessibilityIdentifierUpdater"]
+            name: "XibAccessibilityIdentifierLint",
+            targets: ["XibAccessibilityIdentifierLint"]
         ),
         .plugin(
             name: "XibIDGenerateCommand",
@@ -50,6 +54,12 @@ let package = Package(
                 
             ]
         ),
+        .executableTarget(
+            name: "xibidlint",
+            dependencies: [
+                
+            ]
+        ),
         .plugin(
             name: "ValidateSwiftLint",
             capability: .buildTool(),
@@ -57,10 +67,10 @@ let package = Package(
             path: "Sources/Plugins/ValidateSwiftLint"
         ),
         .plugin(
-            name: "XibAccessibilityIdentifierUpdater",
+            name: "XibAccessibilityIdentifierLint",
             capability: .buildTool(),
-            dependencies: ["xibidgenerator"],
-            path: "Sources/Plugins/XibAccessibilityIdentifierUpdater"
+            dependencies: ["xibidlint"],
+            path: "Sources/Plugins/XibAccessibilityIdentifierLint"
         ),
         
         .plugin(
