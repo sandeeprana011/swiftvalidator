@@ -24,6 +24,10 @@ let package = Package(
         .plugin(
             name: "XibAccessibilityIdentifierUpdater",
             targets: ["XibAccessibilityIdentifierUpdater"]
+        ),
+        .plugin(
+            name: "XibIDGenerateCommand",
+            targets: ["XibIDGenerateCommand"]
         )
     ],
     dependencies: [
@@ -59,14 +63,13 @@ let package = Package(
             path: "Sources/Plugins/XibAccessibilityIdentifierUpdater"
         ),
         
-        
         .plugin(
             name: "XibIDGenerateCommand",
             capability: .command(
                 intent: .custom(verb: "XibIDGenerator", description: "Update the accessibility identifiers in the xib files"),
                 permissions: [.writeToPackageDirectory(reason: "We need to update the accessibility identifiers in the xib files")]),
             dependencies: ["xibidgenerator"],
-            path: "Sources/Plugins/XibAccessibilityIdentifierUpdater"
+            path: "Sources/Plugins/XibIDGenerateCommand"
         )
     ]
 )

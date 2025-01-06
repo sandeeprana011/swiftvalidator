@@ -75,7 +75,7 @@ import Foundation
             debugPrint("Problematic Tag Name: ", tagName)
             if element.children?.filter({element in element.name == "accessibility"}).first == nil {
                 debugPrint("📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕")
-                debugPrint("Please run Accessibility Id Generator. Found elements without any ids")
+                debugPrint("error: Please run Accessibility Id Generator. Found elements without any ids")
                 debugPrint("📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 ")
                 exit(1)
             }
