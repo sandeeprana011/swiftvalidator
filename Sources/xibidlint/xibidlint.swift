@@ -45,7 +45,7 @@ import Foundation
             // Parse the XML document
 //            debugPrint("Reading XML")
             let document = try XMLDocument(data: xmlData, options: .nodePreserveAll)
-
+            
             // Update accessibility identifiers
             updateAccessibilityIdentifiers(in: document.rootElement())
 
@@ -53,18 +53,14 @@ import Foundation
 //            debugPrint("Writing Xml")
             let updatedXMLData = document.xmlData(options: .nodePrettyPrint)
             debugPrint("Please run Accessibility Id Generator. Found elements without any ids")
-//            exit(1)
-//            try updatedXMLData.write(to: URL(fileURLWithPath: path))
-//            let sampleString = "sample data"
-//            debugPrint(sampleString)
-//            try sampleString.write(to: URL(fileURLWithPath: path), atomically: false, encoding: .utf8)
             
-            debugPrint("Updated file: \(path)")
+//            debugPrint("Updated file: \(path)")
         } catch let error {
             debugPrint("\(#file):1: error: Failed to write file: \(error)")
             exit(1)
         }
     }
+    
 
     /// Recursively update accessibility identifiers for relevant elements
     private func updateAccessibilityIdentifiers(in element: XMLElement?) {
@@ -72,10 +68,10 @@ import Foundation
 
         // Check if the element is in the list of supported tags
         if let tagName = Tags(rawValue: element.name ?? "")  {
-            debugPrint("Problematic Tag Name: ", tagName)
             if element.children?.filter({element in element.name == "accessibility"}).first == nil {
+                debugPrint("Problematic Tag Name: ", tagName)
                 debugPrint("📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕")
-                debugPrint("error: Please run Accessibility Id Generator. Found elements without any ids")
+                debugPrint("error: Please run Accessibility Id Generator <target> > XibIDGenerateCommand. Found elements without accessibility identifiers.")
                 debugPrint("📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 📕 ")
                 exit(1)
             }

@@ -38,60 +38,78 @@ import Foundation
             exit(1) // Exit with error status to indicate a problem
             return
         }
-        
         debugPrint("Processing file \(path)")
-
         do {
-            // Parse the XML document
-//            debugPrint("Reading XML")
+            
             let document = try XMLDocument(data: xmlData, options: .nodePreserveAll)
-//            debugPrint(document)
-            // Update accessibility identifiers
-            updateAccessibilityIdentifiers(in: document.rootElement())
+            
+            let fileName = path.split(separator: "/").last?.split(separator: ".").first
+            
+            let connections = try? getAllConnections(xmlDocument: document)
+            
+            debugPrint("FileName: ", fileName, path, path.split(separator: "/"))
 
-            // Write the updated XML back to the file
-//            debugPrint("Writing Xml")
+            updateAccessibilityIdentifiers(in: document.rootElement(), connections: connections ?? [:], customClass: String(fileName ?? ""))
+
+
             let updatedXMLData = document.xmlData(options: .nodePrettyPrint)
-//            debugPrint("Please run Accessibility Id Generator. Found elements without any ids")
-//            exit(1)
+
             try updatedXMLData.write(to: URL(fileURLWithPath: path))
-//            let sampleString = "sample data"
-//            debugPrint(sampleString)
-//            try sampleString.write(to: URL(fileURLWithPath: path), atomically: false, encoding: .utf8)
-//            debugPrint(document)
-            debugPrint("Updated file: \(path)")
+
+//            debugPrint("Updated file: \(path)")
         } catch let error {
             debugPrint("\(#file):1: error: Failed to write file: \(error)")
             exit(1)
         }
     }
+    
+    private func getAllConnections(xmlDocument: XMLDocument) throws -> [String: String] {
+        // XPath query to find all `outlet` elements within `connections`
+        let outlets = try xmlDocument.nodes(forXPath: "//connections/outlet")
+        
+        var connectionsMap = [String: String]()
+        // Iterate through the outlets and extract attributes
+        for outlet in outlets {
+            if let element = outlet as? XMLElement {
+                let property = element.attribute(forName: "property")?.stringValue ?? "N/A"
+                let destination = element.attribute(forName: "destination")?.stringValue ?? "N/A"
+                let id = element.attribute(forName: "id")?.stringValue ?? "N/A"
+                
+                connectionsMap[destination] = property
+                
+                debugPrint("Outlet - Property: \(property), Destination: \(destination), ID: \(id)")
+            }
+        }
+        
+        return connectionsMap
+    }
 
     /// Recursively update accessibility identifiers for relevant elements
-    private func updateAccessibilityIdentifiers(in element: XMLElement?) {
+    private func updateAccessibilityIdentifiers(in element: XMLElement?, connections: [String: String], customClass: String? = nil) {
         guard let element = element else { return }
         
         
-
+        let customClassPlaceholder = "\(customClass != nil ? "\(customClass ?? "")_" : "")"
+        debugPrint("Custom Class: ", customClassPlaceholder, customClass)
         
-        // Check if the element is in the list of supported tags
         if let tagName = Tags(rawValue: element.name ?? "")  {
-            let identifier = element.attribute(forName: "identifier")?.stringValue
-            debugPrint("Going through Tag Name: ", tagName, element.children)
+            let identifier = element.attribute(forName: "id")?.stringValue
+//            debugPrint("Going through Tag Name: ", connections, identifier)
             if element.children?.filter({element in element.name == "accessibility"}).first == nil {
                 let accessibilityElement = XMLElement(name: "accessibility")
                 accessibilityElement.addAttribute(XMLNode.attribute(withName: "key", stringValue: "accessibilityConfiguration") as! XMLNode)
-                accessibilityElement.addAttribute(XMLNode.attribute(withName: "identifier", stringValue: "\(tagName.rawValue)_\(identifier)") as! XMLNode)
+                accessibilityElement.addAttribute(XMLNode.attribute(withName: "identifier", stringValue: "\(customClassPlaceholder)\(tagName.rawValue)_\(connections[identifier ?? ""] ?? "")") as! XMLNode)
                 element.addChild(accessibilityElement)
-                print("Child Node: ",accessibilityElement)
+//                print("Child Node: ",accessibilityElement)
             }
-            debugPrint(element.children)
+//            debugPrint(element.children)
         } else {
-            print("Element not found", element.name)
+//            print("Element not found", element.name)
         }
 
         // Recursively process child elements
         for child in element.children ?? [] {
-            updateAccessibilityIdentifiers(in: child as? XMLElement)
+            updateAccessibilityIdentifiers(in: child as? XMLElement, connections: connections, customClass: customClass)
         }
     }
 
@@ -111,18 +129,6 @@ import Foundation
         }
     }
     
-//    func updateNodes() {
-//        let arguments = CommandLine.arguments
-//        guard arguments.count > 1 else {
-//            print("Usage: XibAccessibilityTool <directory_path>")
-//            return
-//        }
-//        let directoryPath = arguments[1]
-//        let updater = xibidgenerator()
-//        updater.processDirectory(directoryPath)
-//    }
-
-
 }
 
 // MARK: - Supported Tags
